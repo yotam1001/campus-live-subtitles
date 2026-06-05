@@ -8,8 +8,7 @@
     "offscreen",
     "scripting",
     "storage",
-    "tabCapture",
-    "tabs"
+    "tabCapture"
   ],
   "host_permissions": [
     "https://app.campus.gov.il/*",

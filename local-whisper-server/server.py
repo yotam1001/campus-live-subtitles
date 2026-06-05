@@ -1,27 +1,40 @@
 import argparse
 import os
+import re
 import tempfile
 import threading
 from pathlib import Path
 
 from faster_whisper import WhisperModel
 from flask import Flask, jsonify, request
-from flask_cors import CORS
 
 
 app = Flask(__name__)
-CORS(app)
+app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024
 
 model_lock = threading.Lock()
 loaded_models = {}
 default_model_size = "base"
 default_device = "cpu"
 default_compute_type = "int8"
+allowed_model_sizes = {"tiny", "base", "small", "medium", "large-v3"}
+language_pattern = re.compile(r"^[a-z]{2,3}$")
+
+
+@app.before_request
+def reject_cross_site_browser_requests():
+    origin = request.headers.get("Origin")
+    if origin and not origin.startswith("chrome-extension://"):
+        return jsonify({"error": "Cross-origin browser requests are not allowed."}), 403
 
 
 @app.get("/health")
 def health():
-    return jsonify({"ok": True, "models_loaded": list(loaded_models.keys())})
+    return jsonify({
+        "ok": True,
+        "models_loaded": list(loaded_models.keys()),
+        "allowed_model_sizes": sorted(allowed_model_sizes),
+    })
 
 
 @app.post("/unload")
@@ -50,6 +63,14 @@ def transcribe():
     language = (request.form.get("language") or "he").strip() or "he"
     model_size = (request.form.get("model_size") or default_model_size).strip() or default_model_size
     initial_prompt = (request.form.get("prompt") or "").strip() or None
+    if initial_prompt and len(initial_prompt) > 500:
+        initial_prompt = initial_prompt[:500]
+
+    if model_size not in allowed_model_sizes:
+        return jsonify({"error": "Unsupported model size."}), 400
+
+    if not language_pattern.fullmatch(language):
+        return jsonify({"error": "Unsupported language code."}), 400
 
     with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
         audio_file.save(tmp)
@@ -114,6 +135,9 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
+    if args.model not in allowed_model_sizes:
+        raise SystemExit(f"Unsupported model '{args.model}'. Choose one of: {', '.join(sorted(allowed_model_sizes))}")
+
     default_model_size = args.model
     default_device = args.device
     default_compute_type = args.compute_type

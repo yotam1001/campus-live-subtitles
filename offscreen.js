@@ -96,11 +96,18 @@ async function startCapture(streamId, tabId, rawOptions = {}) {
   playbackGain.gain.value = 1;
   state.source.connect(playbackGain).connect(state.audioContext.destination);
 
-  state.processor = state.audioContext.createScriptProcessor(4096, 2, 1);
+  await state.audioContext.audioWorklet.addModule(chrome.runtime.getURL("audio-worklet.js"));
+
+  state.processor = new AudioWorkletNode(state.audioContext, "campus-audio-processor", {
+    numberOfInputs: 1,
+    numberOfOutputs: 1,
+    outputChannelCount: [1]
+  });
+
   const silentGain = state.audioContext.createGain();
   silentGain.gain.value = 0;
 
-  state.processor.onaudioprocess = handleAudioProcess;
+  state.processor.port.onmessage = (event) => handleAudioChunk(event.data);
   state.source.connect(state.processor);
   state.processor.connect(silentGain).connect(state.audioContext.destination);
 
@@ -113,7 +120,7 @@ async function stopCapture({ shutdownLocalServer = false } = {}) {
   state = createEmptyState();
 
   if (previous.processor) {
-    previous.processor.onaudioprocess = null;
+    previous.processor.port.onmessage = null;
     previous.processor.disconnect();
   }
 
@@ -129,20 +136,8 @@ async function stopCapture({ shutdownLocalServer = false } = {}) {
   }
 }
 
-function handleAudioProcess(event) {
+function handleAudioChunk(mono) {
   if (!state.audioContext) return;
-
-  const inputBuffer = event.inputBuffer;
-  const sampleCount = inputBuffer.length;
-  const channelCount = inputBuffer.numberOfChannels;
-  const mono = new Float32Array(sampleCount);
-
-  for (let channel = 0; channel < channelCount; channel += 1) {
-    const channelData = inputBuffer.getChannelData(channel);
-    for (let i = 0; i < sampleCount; i += 1) {
-      mono[i] += channelData[i] / channelCount;
-    }
-  }
 
   state.queue.push(mono);
   state.sampleCount += mono.length;

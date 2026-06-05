@@ -11,6 +11,7 @@ The transcription backend runs on your own computer with [`faster-whisper`](http
 - Transcribes locally with Whisper-compatible model sizes such as `base`, `small`, `medium`, and `large-v3`.
 - Draws subtitles at the bottom center of the video page.
 - Stops the local server by default when the extension is stopped.
+- Uses `AudioWorkletNode` for browser audio processing.
 
 ## Privacy
 
@@ -83,10 +84,13 @@ By default, the extension calls `/shutdown` when you press Stop. Turn off "Stop 
 
 If you disable or remove the extension directly from `chrome://extensions`, Chrome may not give the extension a chance to call `/shutdown`. Press Stop in the popup first when you want the local server to exit cleanly.
 
+The server allowlists supported model sizes and rejects browser requests whose `Origin` is not a Chrome extension origin.
+
 ## Development Checks
 
 ```powershell
 node --check background.js
+node --check audio-worklet.js
 node --check offscreen.js
 node --check popup.js
 python -m py_compile local-whisper-server/server.py

@@ -21,6 +21,7 @@ Run these before opening a pull request:
 
 ```powershell
 node --check background.js
+node --check audio-worklet.js
 node --check offscreen.js
 node --check popup.js
 python -m py_compile local-whisper-server/server.py
