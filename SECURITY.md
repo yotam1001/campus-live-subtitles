@@ -20,5 +20,6 @@ The extension requests:
 - `offscreen` to keep audio capture running outside the popup.
 - `scripting` and `activeTab` to inject the subtitle overlay into the current Campus page.
 - `storage` to save local UI settings.
+- `tabs` to identify the active tab and deliver overlay/status messages.
 
 The manifest limits page injection to `https://app.campus.gov.il/*`.

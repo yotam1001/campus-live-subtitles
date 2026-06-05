@@ -16,6 +16,8 @@ The transcription backend runs on your own computer with [`faster-whisper`](http
 
 In the default setup, audio stays on your machine. The browser extension sends audio only to the local server URL shown in the popup.
 
+The first run may download Whisper model files from Hugging Face through `faster-whisper`. That download is for model weights only; course audio is not uploaded as part of the default local workflow.
+
 The repository does not include course audio, transcripts, model weights, virtual environments, API keys, or local machine paths.
 
 ## Requirements
@@ -78,6 +80,8 @@ The local server exposes:
 - `POST /shutdown`: unloads models and exits the server process.
 
 By default, the extension calls `/shutdown` when you press Stop. Turn off "Stop local server when stopped" in the popup if you want to keep the model loaded between videos.
+
+If you disable or remove the extension directly from `chrome://extensions`, Chrome may not give the extension a chance to call `/shutdown`. Press Stop in the popup first when you want the local server to exit cleanly.
 
 ## Development Checks
 
