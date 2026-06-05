@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Campus Live Subtitles</title>
+    <link rel="stylesheet" href="popup.css">
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>Campus Live Subtitles</h1>
+        <p>Tab audio to live Hebrew captions.</p>
+      </header>
+
+      <label>
+        Local server
+        <input id="endpoint" type="text" value="http://127.0.0.1:8765/transcribe">
+      </label>
+
+      <label>
+        Local model
+        <select id="localModelSize">
+          <option value="base">base - faster</option>
+          <option value="small">small - better Hebrew</option>
+          <option value="tiny">tiny - fastest</option>
+          <option value="medium">medium - slower</option>
+          <option value="large-v3">large-v3 - best, very slow</option>
+        </select>
+      </label>
+
+      <label class="checkrow">
+        <input id="stopLocalServerOnStop" type="checkbox" checked>
+        Stop local server when stopped
+      </label>
+
+      <div class="row">
+        <label>
+          Language
+          <input id="language" type="text" maxlength="8" value="he">
+        </label>
+        <label>
+          Chunk sec
+          <input id="chunkSeconds" type="number" min="2" max="12" step="1" value="4">
+        </label>
+      </div>
+
+      <label>
+        Context prompt
+        <textarea id="prompt" rows="3"></textarea>
+      </label>
+
+      <div class="actions">
+        <button id="start" type="button">Start</button>
+        <button id="stop" type="button" class="secondary">Stop</button>
+      </div>
+
+      <p id="status" role="status">Idle</p>
+    </main>
+    <script src="popup.js"></script>
+  </body>
+</html>

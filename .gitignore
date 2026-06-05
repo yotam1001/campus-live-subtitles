@@ -1,0 +1,23 @@
+.venv/
+__pycache__/
+*.py[cod]
+
+.DS_Store
+Thumbs.db
+
+*.log
+*.tmp
+*.wav
+*.webm
+*.mp3
+
+.env
+.env.*
+
+node_modules/
+dist/
+build/
+
+# Local model/cache directories if a user chooses to keep them in the repo tree.
+.cache/
+models/
